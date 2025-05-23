@@ -1,4 +1,5 @@
 #![no_std]
+#![no_main]
 use core::panic::PanicInfo;
 
 /// This function is called on panic.
@@ -7,7 +8,26 @@ fn panic(_info: &PanicInfo) -> ! {
     loop {}
 }
 
-fn main() {}
+static HELLO: &[u8] = b"Hello, world!\n";
+
+#[unsafe(no_mangle)]
+pub extern "C" fn _start() -> ! {
+    let vga_buffer = 0xb8000 as *mut u8;
+    
+    for (i, &byte) in HELLO.iter().enumerate() {
+        unsafe {
+            // Write the character to the VGA buffer
+            *vga_buffer.offset(i as isize * 2) = byte;
+            // Write the attribute byte (white on black)
+            *vga_buffer.offset(i as isize * 2 + 1) = 0x07;
+        }
+    }
+    
+    
+    loop{} 
+        // Your main code goes here
+
+}
 
 
 
